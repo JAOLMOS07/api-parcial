@@ -66,6 +66,7 @@ class CustomerModel(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
     name: str
     email: str
+    cedula:str
     points: int = 0
 
     class Config:
@@ -304,7 +305,7 @@ async def start_transaction(request: StartTransactionRequest):
     """Start a new transaction"""
     try:
         # Verify customer exists
-        customer = await customers_collection.find_one({"_id": ObjectId(request.customer_id)})
+        customer = await customers_collection.find_one({"cedula": request.customer_id})
         if not customer:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -479,7 +480,7 @@ async def finalize_transaction(request: FinalizeTransactionRequest):
 
         # Handle points payment
         if request.payment_method == PaymentMethod.POINTS:
-            customer = await customers_collection.find_one({"_id": ObjectId(transaction["customer_id"])})
+            customer = await customers_collection.find_one({"cedula": transaction["customer_id"]})
             if customer["points"] < total:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -488,13 +489,13 @@ async def finalize_transaction(request: FinalizeTransactionRequest):
 
             # Deduct points
             await customers_collection.update_one(
-                {"_id": ObjectId(transaction["customer_id"])},
+                {"cedula": transaction["customer_id"]},
                 {"$inc": {"points": -int(total)}}
             )
         else:
             # Add points (1 point per dollar spent)
             await customers_collection.update_one(
-                {"_id": ObjectId(transaction["customer_id"])},
+                {"cedula": transaction["customer_id"]},
                 {"$inc": {"points": int(total)}}
             )
 
