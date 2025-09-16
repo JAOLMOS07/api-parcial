@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 from dotenv import load_dotenv
-
+from fastapi.middleware.cors import CORSMiddleware
 # Load environment variables
 load_dotenv()
 
@@ -19,6 +19,20 @@ app = FastAPI(
     title="MegaMart Sales System",
     description="Complete supermarket sales and inventory management system",
     version="1.0.0"
+)
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # MongoDB connection
